@@ -1,0 +1,23 @@
+/* Mengatur box-sizing secara global */
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif; /* Font default Material-UI */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f4f6f8; /* Warna latar belakang aplikasi yang lembut */
+}
+
+/* Tambahkan gaya responsif dasar jika diperlukan */
+/* Misalnya, untuk memastikan elemen tidak terlalu lebar di layar kecil */
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+  }
+}
