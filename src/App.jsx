@@ -27,48 +27,56 @@ const PrivateRoute = ({ children }) => {
     return user ? children : <Navigate to="/login" />;
 };
 
+import { ThemeProvider } from '@mui/material/styles';
+import { SnackbarProvider } from 'notistack';
+import theme from './theme';
+
 function App() {
     return (
-        <Router>
-            {/* Bungkus seluruh aplikasi dengan AuthProvider agar state otentikasi tersedia */}
-            <AuthProvider>
-                <Routes>
-                    {/* Rute publik */}
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
+        <ThemeProvider theme={theme}>
+            <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+                <Router>
+                    {/* Bungkus seluruh aplikasi dengan AuthProvider agar state otentikasi tersedia */}
+                    <AuthProvider>
+                        <Routes>
+                            {/* Rute publik */}
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
 
-                    {/* Rute yang dilindungi (memerlukan otentikasi) */}
-                    <Route
-                        path="/"
-                        element={
-                            <PrivateRoute>
-                                <DashboardPage />
-                            </PrivateRoute>
-                        }
-                    />
-                    <Route
-                        path="/transactions"
-                        element={
-                            <PrivateRoute>
-                                <TransactionsPage />
-                            </PrivateRoute>
-                        }
-                    />
-                    <Route
-                        path="/categories"
-                        element={
-                            <PrivateRoute>
-                                <CategoriesPage />
-                            </PrivateRoute>
-                        }
-                    />
-                    {/* Tambahkan rute lain yang dilindungi di sini */}
+                            {/* Rute yang dilindungi (memerlukan otentikasi) */}
+                            <Route
+                                path="/"
+                                element={
+                                    <PrivateRoute>
+                                        <DashboardPage />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/transactions"
+                                element={
+                                    <PrivateRoute>
+                                        <TransactionsPage />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/categories"
+                                element={
+                                    <PrivateRoute>
+                                        <CategoriesPage />
+                                    </PrivateRoute>
+                                }
+                            />
+                            {/* Tambahkan rute lain yang dilindungi di sini */}
 
-                    {/* Rute fallback untuk halaman tidak ditemukan */}
-                    <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
-            </AuthProvider>
-        </Router>
+                            {/* Rute fallback untuk halaman tidak ditemukan */}
+                            <Route path="*" element={<Navigate to="/" />} />
+                        </Routes>
+                    </AuthProvider>
+                </Router>
+            </SnackbarProvider>
+        </ThemeProvider>
     );
 }
 

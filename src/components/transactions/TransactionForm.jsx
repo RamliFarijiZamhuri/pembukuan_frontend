@@ -1,37 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import {
     TextField, Button, Box, MenuItem, FormControl, InputLabel, Select, RadioGroup,
-    FormControlLabel, Radio, FormLabel, Alert, CircularProgress
+    FormControlLabel, Radio, FormLabel, CircularProgress
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import api from '../../services/api';
+import { useSnackbar } from 'notistack';
 
 function TransactionForm({ transaction, categories, onSave, onCancel }) {
     const [formData, setFormData] = useState({
-        type: 'pengeluaran', // Default
+        type: 'pengeluaran',
         amount: '',
         description: '',
         category: '',
-        date: dayjs(), // Default ke tanggal hari ini
+        date: dayjs(),
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
         if (transaction) {
-            // Jika dalam mode edit, isi form dengan data transaksi yang ada
             setFormData({
                 type: transaction.type,
                 amount: transaction.amount,
                 description: transaction.description,
-                category: transaction.category?.id || '', // Pastikan mengambil id kategori
+                category: transaction.category?.id || '',
                 date: dayjs(transaction.date),
             });
         } else {
-            // Reset form jika tidak ada transaksi yang diedit
             setFormData({
                 type: 'pengeluaran',
                 amount: '',
@@ -54,16 +53,14 @@ function TransactionForm({ transaction, categories, onSave, onCancel }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
-        // Validasi dasar
         if (!formData.amount || !formData.description || !formData.category || !formData.date) {
-            setError('Semua kolom harus diisi.');
+            enqueueSnackbar('Semua kolom harus diisi.', { variant: 'warning' });
             setLoading(false);
             return;
         }
         if (isNaN(formData.amount) || formData.amount <= 0) {
-            setError('Jumlah harus angka positif.');
+            enqueueSnackbar('Jumlah harus angka positif.', { variant: 'warning' });
             setLoading(false);
             return;
         }
@@ -71,35 +68,29 @@ function TransactionForm({ transaction, categories, onSave, onCancel }) {
         try {
             const dataToSend = {
                 ...formData,
-                amount: parseFloat(formData.amount), // Pastikan jumlah adalah angka
-                date: formData.date.toISOString(), // Format tanggal ke ISO string untuk backend
+                amount: parseFloat(formData.amount),
+                date: formData.date.toISOString(),
             };
 
             if (transaction) {
-                // Mode edit
                 await api.put(`/transactions/${transaction.id}`, dataToSend);
             } else {
-                // Mode tambah baru
                 await api.post('/transactions', dataToSend);
             }
-            onSave(); // Panggil fungsi onSave dari parent untuk refresh data
+            onSave();
         } catch (err) {
             console.error('Gagal menyimpan transaksi:', err);
-            setError(err.response?.data?.message || 'Gagal menyimpan transaksi. Silakan coba lagi.');
+            enqueueSnackbar(err.response?.data?.message || 'Gagal menyimpan transaksi. Silakan coba lagi.', { variant: 'error' });
         } finally {
             setLoading(false);
         }
     };
 
-    // Filter kategori berdasarkan tipe transaksi yang dipilih
     const filteredCategories = categories.filter(cat => cat.type === formData.type);
-
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {error && <Alert severity="error">{error}</Alert>}
-
                 <FormControl component="fieldset">
                     <FormLabel component="legend">Jenis Transaksi</FormLabel>
                     <RadioGroup
@@ -167,7 +158,7 @@ function TransactionForm({ transaction, categories, onSave, onCancel }) {
                         Batal
                     </Button>
                     <Button type="submit" variant="contained" disabled={loading}>
-                        {loading ? <CircularProgress size={24} /> : (transaction ? 'Perbarui' : 'Simpan')}
+                        {loading ? <CircularProgress size={24} color="inherit" /> : (transaction ? 'Perbarui' : 'Simpan')}
                     </Button>
                 </Box>
             </Box>

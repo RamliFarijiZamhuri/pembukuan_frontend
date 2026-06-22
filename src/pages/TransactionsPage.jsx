@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
-import { Box, Typography, Container, CircularProgress, Alert, Button, Modal, Fade, Backdrop } from '@mui/material';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+import { Box, Typography, Container, CircularProgress, Button, Modal, Fade, Backdrop } from '@mui/material';
+import Layout from '../components/Layout';
 import TransactionList from '../components/transactions/TransactionList';
-import TransactionForm from '../components/transactions/TransactionForm'; // Akan dibuat
+import TransactionForm from '../components/transactions/TransactionForm';
 import AddIcon from '@mui/icons-material/Add';
+import { useSnackbar } from 'notistack';
 
 const modalStyle = {
     position: 'absolute',
@@ -24,13 +24,12 @@ function TransactionsPage() {
     const [transactions, setTransactions] = useState([]);
     const [categories, setCategories] = useState([]); // Untuk dropdown kategori di form
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [openModal, setOpenModal] = useState(false);
-    const [editingTransaction, setEditingTransaction] = useState(null); // Untuk edit transaksi
+    const [editingTransaction, setEditingTransaction] = useState(null);
+    const { enqueueSnackbar } = useSnackbar();
 
     const fetchTransactionsAndCategories = async () => {
         setLoading(true);
-        setError('');
         try {
             const [transactionsRes, categoriesRes] = await Promise.all([
                 api.get('/transactions'),
@@ -42,7 +41,7 @@ function TransactionsPage() {
             setCategories(categoriesRes.data);
         } catch (err) {
             console.error('Gagal memuat data transaksi/kategori:', err);
-            setError('Gagal memuat transaksi atau kategori. Silakan coba lagi.');
+            enqueueSnackbar('Gagal memuat transaksi atau kategori. Silakan coba lagi.', { variant: 'error' });
         } finally {
             setLoading(false);
         }
@@ -63,6 +62,7 @@ function TransactionsPage() {
     };
 
     const handleTransactionSaved = () => {
+        enqueueSnackbar('Transaksi berhasil disimpan!', { variant: 'success' });
         fetchTransactionsAndCategories(); // Muat ulang data setelah simpan/edit
         handleCloseModal();
     };
@@ -71,92 +71,86 @@ function TransactionsPage() {
         if (window.confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
             try {
                 await api.delete(`/transactions/${id}`);
+                enqueueSnackbar('Transaksi berhasil dihapus.', { variant: 'success' });
                 fetchTransactionsAndCategories(); // Muat ulang data
             } catch (err) {
                 console.error('Gagal menghapus transaksi:', err);
-                setError('Gagal menghapus transaksi. Silakan coba lagi.');
+                enqueueSnackbar('Gagal menghapus transaksi. Silakan coba lagi.', { variant: 'error' });
             }
         }
     };
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <CircularProgress />
-                <Typography sx={{ ml: 2 }}>Memuat Transaksi...</Typography>
-            </Box>
-        );
-    }
-
-    if (error) {
-        return (
-            <Box sx={{ display: 'flex' }}>
-                <Navbar />
-                <Sidebar />
-                <Container sx={{ mt: 10, p: 3 }}>
-                    <Alert severity="error">{error}</Alert>
-                </Container>
-            </Box>
+            <Layout>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+                    <CircularProgress />
+                    <Typography sx={{ ml: 2 }}>Memuat Transaksi...</Typography>
+                </Box>
+            </Layout>
         );
     }
 
     return (
-        <Box sx={{ display: 'flex' }}>
-            <Navbar />
-            <Sidebar />
-            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h4">
-                        Daftar Transaksi
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => handleOpenModal()}
-                    >
-                        Tambah Transaksi
-                    </Button>
-                </Box>
-
-                {transactions.length > 0 ? (
-                    <TransactionList
-                        transactions={transactions}
-                        onEdit={handleOpenModal}
-                        onDelete={handleDeleteTransaction}
-                    />
-                ) : (
-                    <Typography>Belum ada transaksi. Tambahkan yang pertama!</Typography>
-                )}
-
-                <Modal
-                    aria-labelledby="transition-modal-title"
-                    aria-describedby="transition-modal-description"
-                    open={openModal}
-                    onClose={handleCloseModal}
-                    closeAfterTransition
-                    slots={{ backdrop: Backdrop }}
-                    slotProps={{
-                        backdrop: {
-                            timeout: 500,
-                        },
-                    }}
+        <Layout>
+            <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                mb: 3,
+                gap: { xs: 2, sm: 0 }
+            }}>
+                <Typography variant="h4" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+                    Daftar Transaksi
+                </Typography>
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => handleOpenModal()}
                 >
-                    <Fade in={openModal}>
-                        <Box sx={modalStyle}>
-                            <Typography id="transition-modal-title" variant="h6" component="h2" mb={2}>
-                                {editingTransaction ? 'Edit Transaksi' : 'Tambah Transaksi Baru'}
-                            </Typography>
-                            <TransactionForm
-                                transaction={editingTransaction}
-                                categories={categories}
-                                onSave={handleTransactionSaved}
-                                onCancel={handleCloseModal}
-                            />
-                        </Box>
-                    </Fade>
-                </Modal>
+                    Tambah Transaksi
+                </Button>
             </Box>
-        </Box>
+
+            {transactions.length > 0 ? (
+                <TransactionList
+                    transactions={transactions}
+                    onEdit={handleOpenModal}
+                    onDelete={handleDeleteTransaction}
+                />
+            ) : (
+                <Typography>Belum ada transaksi. Tambahkan yang pertama!</Typography>
+            )}
+
+            <Modal
+                aria-labelledby="transition-modal-title"
+                aria-describedby="transition-modal-description"
+                open={openModal}
+                onClose={handleCloseModal}
+                closeAfterTransition
+                slots={{ backdrop: Backdrop }}
+                slotProps={{
+                    backdrop: {
+                        timeout: 500,
+                    },
+                }}
+            >
+                <Fade in={openModal}>
+                    <Box sx={modalStyle}>
+                        <Typography id="transition-modal-title" variant="h6" component="h2" mb={2}>
+                            {editingTransaction ? 'Edit Transaksi' : 'Tambah Transaksi Baru'}
+                        </Typography>
+                        <TransactionForm
+                            transaction={editingTransaction}
+                            categories={categories}
+                            onSave={handleTransactionSaved}
+                            onCancel={handleCloseModal}
+                        />
+                    </Box>
+                </Fade>
+            </Modal>
+        </Layout>
     );
 }
 
