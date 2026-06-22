@@ -127,14 +127,14 @@ function CategoriesPage() {
                             </TableHead>
                             <TableBody>
                                 {categories.map((category) => (
-                                    <TableRow key={category._id}>
+                                    <TableRow key={category.id}>
                                         <TableCell>{category.name}</TableCell>
                                         <TableCell>{category.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'}</TableCell>
                                         <TableCell align="right">
                                             <IconButton onClick={() => handleOpenModal(category)} color="primary">
                                                 <EditIcon />
                                             </IconButton>
-                                            <IconButton onClick={() => handleDeleteCategory(category._id)} color="error">
+                                            <IconButton onClick={() => handleDeleteCategory(category.id)} color="error">
                                                 <DeleteIcon />
                                             </IconButton>
                                         </TableCell>

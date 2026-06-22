@@ -27,7 +27,7 @@ function TransactionForm({ transaction, categories, onSave, onCancel }) {
                 type: transaction.type,
                 amount: transaction.amount,
                 description: transaction.description,
-                category: transaction.category?._id || '', // Pastikan mengambil _id kategori
+                category: transaction.category?.id || '', // Pastikan mengambil id kategori
                 date: dayjs(transaction.date),
             });
         } else {
@@ -77,7 +77,7 @@ function TransactionForm({ transaction, categories, onSave, onCancel }) {
 
             if (transaction) {
                 // Mode edit
-                await api.put(`/transactions/${transaction._id}`, dataToSend);
+                await api.put(`/transactions/${transaction.id}`, dataToSend);
             } else {
                 // Mode tambah baru
                 await api.post('/transactions', dataToSend);
@@ -144,7 +144,7 @@ function TransactionForm({ transaction, categories, onSave, onCancel }) {
                             <em>Pilih Kategori</em>
                         </MenuItem>
                         {filteredCategories.map((cat) => (
-                            <MenuItem key={cat._id} value={cat._id}>
+                            <MenuItem key={cat.id} value={cat.id}>
                                 {cat.name}
                             </MenuItem>
                         ))}

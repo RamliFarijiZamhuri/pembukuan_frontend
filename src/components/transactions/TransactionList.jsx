@@ -40,7 +40,7 @@ function TransactionList({ transactions, onEdit, onDelete }) {
                 <TableBody>
                     {transactions.map((transaction) => (
                         <TableRow
-                            key={transaction._id}
+                            key={transaction.id}
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
                             <TableCell component="th" scope="row">
@@ -65,7 +65,7 @@ function TransactionList({ transactions, onEdit, onDelete }) {
                                 <IconButton onClick={() => onEdit(transaction)} color="primary" size="small">
                                     <EditIcon fontSize="small" />
                                 </IconButton>
-                                <IconButton onClick={() => onDelete(transaction._id)} color="error" size="small">
+                                <IconButton onClick={() => onDelete(transaction.id)} color="error" size="small">
                                     <DeleteIcon fontSize="small" />
                                 </IconButton>
                             </TableCell>

@@ -64,7 +64,7 @@ function CategoryForm({ category, onSave, onCancel }) {
         try {
             if (category) {
                 // Jika 'category' ada, berarti ini adalah mode edit. Kirim permintaan PUT.
-                await api.put(`/categories/${category._id}`, formData);
+                await api.put(`/categories/${category.id}`, formData);
             } else {
                 // Jika 'category' tidak ada, berarti ini adalah mode tambah baru. Kirim permintaan POST.
                 await api.post('/categories', formData);
